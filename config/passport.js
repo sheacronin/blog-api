@@ -40,7 +40,7 @@ opts.secretOrKey = process.env.SECRET_KEY;
 passport.use(
     new JwtStrategy(opts, async (jwtPayload, done) => {
         try {
-            const user = await User.findById(jwtPayload.id);
+            const user = await User.findById(jwtPayload._id);
             return done(null, user);
         } catch (err) {
             return done(err);
