@@ -1,8 +1,29 @@
 const User = require('../models/user');
+const Post = require('../models/post');
 const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const passport = require('passport');
 const jwt = require('jsonwebtoken');
+
+exports.getAllUsers = (req, res, next) => {
+    User.find()
+        .sort([['username', 'descending']])
+        .exec((err, users) => {
+            if (err) return next(err);
+
+            res.json(users);
+        });
+};
+
+exports.getUser = (req, res, next) => {
+    const { userId } = req.params;
+
+    User.findById(userId).exec((err, user) => {
+        if (err) return next(err);
+
+        res.json(user);
+    });
+};
 
 exports.createUser = [
     body('username', 'Username must be specified')
@@ -85,4 +106,15 @@ exports.loginUser = (req, res) => {
             return res.json({ user, token });
         });
     })(req, res);
+};
+
+exports.getPostsByUser = (req, res, next) => {
+    Post.find({ author: req.params.userId })
+        .populate('author')
+        .populate('comments')
+        .exec((err, posts) => {
+            if (err) return next(err);
+
+            res.json(posts);
+        });
 };
