@@ -1,4 +1,5 @@
 const Post = require('../models/post');
+const Comment = require('../models/comment');
 const { body, validationResult } = require('express-validator');
 const passport = require('passport');
 
@@ -6,6 +7,7 @@ exports.getAllPosts = (req, res) => {
     Post.find()
         .sort([['timestamp', 'descending']])
         .populate('author')
+        .populate('comments')
         .exec((err, posts) => {
             if (err) return next(err);
 
@@ -18,6 +20,7 @@ exports.getPost = (req, res) => {
 
     Post.findById(postId)
         .populate('author')
+        .populate('comments')
         .exec((err, post) => {
             if (err) return next(err);
 
@@ -46,6 +49,7 @@ exports.createPost = [
             content: req.body.content,
             timestamp: new Date(),
             isPublished: req.body.isPublished === 'true' ? true : false,
+            comments: [],
         });
 
         if (!errors.isEmpty()) {
@@ -107,8 +111,12 @@ exports.deletePost = [
     passport.authenticate('jwt', { session: false }),
 
     (req, res, next) => {
-        Post.findByIdAndRemove(req.params.postId, (err) => {
+        Post.findByIdAndRemove(req.params.postId, (err, thePost) => {
             if (err) return next(err);
+
+            console.log(thePost.comments);
+            // Delete comments belonging to the post
+            Comment.deleteMany({ _id: { $in: thePost.comments } });
 
             res.json({
                 message: `Post ${req.params.postId} has been successfully deleted`,
