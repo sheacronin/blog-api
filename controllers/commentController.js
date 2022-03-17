@@ -45,3 +45,66 @@ exports.createComment = [
         }
     },
 ];
+
+exports.editComment = [
+    body('content', 'Comment must have content')
+        .trim()
+        .isLength({ min: 1 })
+        .escape(),
+
+    passport.authenticate('jwt', { session: false }),
+
+    (req, res, next) => {
+        const errors = validationResult(req);
+
+        const newComment = {
+            content: req.body.content,
+        };
+
+        if (!errors.isEmpty()) {
+            res.status(400).json({
+                message: 'There was an issue',
+                errors: errors.array(),
+            });
+            return;
+        } else {
+            Comment.findByIdAndUpdate(
+                req.params.commentId,
+                newComment,
+                { new: true },
+                (err, thePost) => {
+                    if (err) return next(err);
+
+                    res.json({ thePost });
+                }
+            );
+        }
+    },
+];
+
+exports.deleteComment = [
+    passport.authenticate('jwt', { session: false }),
+
+    (req, res, next) => {
+        // Remove comment id from post
+        Post.findByIdAndUpdate(
+            req.params.postId,
+            {
+                $pull: { comments: req.params.commentId },
+            },
+            { new: true },
+            (err, thePost) => {
+                if (err) return next(err);
+                console.log(thePost);
+            }
+        );
+
+        Comment.findByIdAndRemove(req.params.commentId, (err) => {
+            if (err) return next(err);
+
+            res.json({
+                message: `Comment ${req.params.commentId} has been successfully deleted`,
+            });
+        });
+    },
+];
