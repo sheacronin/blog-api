@@ -38,7 +38,6 @@ exports.createPost = [
     passport.authenticate('jwt', { session: false }),
 
     (req, res, next) => {
-        console.log('this runs');
         const errors = validationResult(req);
 
         const post = new Post({
@@ -62,5 +61,58 @@ exports.createPost = [
                 res.json({ post });
             });
         }
+    },
+];
+
+exports.editPost = [
+    body('title', 'Title must be specified').trim().escape(),
+    body('content', 'Post must have content').trim().escape(),
+
+    passport.authenticate('jwt', { session: false }),
+
+    (req, res, next) => {
+        const errors = validationResult(req);
+
+        Post.findById(req.params.postId).then((originalPost) => {
+            console.log(originalPost);
+            const newPost = {
+                title: req.body.title || originalPost.title,
+                content: req.body.content || originalPost.content,
+                isPublished: req.body.isPublished === 'true' ? true : false,
+            };
+
+            if (!errors.isEmpty()) {
+                res.status(400).json({
+                    message: 'There was an issue',
+                    errors: errors.array(),
+                });
+                return;
+            } else {
+                Post.findByIdAndUpdate(
+                    req.params.postId,
+                    newPost,
+                    { new: true },
+                    (err, thePost) => {
+                        if (err) return next(err);
+
+                        res.json({ thePost });
+                    }
+                );
+            }
+        });
+    },
+];
+
+exports.deletePost = [
+    passport.authenticate('jwt', { session: false }),
+
+    (req, res, next) => {
+        Post.findByIdAndRemove(req.params.postId, (err) => {
+            if (err) return next(err);
+
+            res.json({
+                message: `Post ${req.params.postId} has been successfully deleted`,
+            });
+        });
     },
 ];
