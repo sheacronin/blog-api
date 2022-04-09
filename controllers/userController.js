@@ -102,7 +102,10 @@ exports.loginUser = (req, res) => {
             // generate a signed on web token with the contents
             // of user object and return it in the response
 
-            const token = jwt.sign(user.toJSON(), process.env.SECRET_KEY);
+            const token = jwt.sign(user.toJSON(), process.env.SECRET_KEY, {
+                expiresIn: '1h',
+            });
+            res.cookie('token', token, { httpOnly: true, maxAge: 3600000 });
             return res.json({ user, token });
         });
     })(req, res);
