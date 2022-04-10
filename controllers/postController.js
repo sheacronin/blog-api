@@ -7,7 +7,7 @@ exports.getAllPosts = (req, res) => {
     Post.find()
         .sort([['timestamp', 'descending']])
         .populate('author')
-        .populate('comments')
+        .populate({ path: 'comments', populate: { path: 'author' } })
         .exec((err, posts) => {
             if (err) return next(err);
 
@@ -20,7 +20,7 @@ exports.getPost = (req, res) => {
 
     Post.findById(postId)
         .populate('author')
-        .populate('comments')
+        .populate({ path: 'comments', populate: { path: 'author' } })
         .exec((err, post) => {
             if (err) return next(err);
 
