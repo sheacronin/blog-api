@@ -138,6 +138,12 @@ exports.loginUser = (req, res) => {
     })(req, res);
 };
 
+exports.logoutUser = (req, res, next) => {
+    // Remove the token cookie
+    res.cookie('token', '', { httpOnly: true, maxAge: 1 });
+    res.json({ message: 'Token cookie has been destroyed' });
+};
+
 exports.getPostsByUser = (req, res, next) => {
     Post.find({ author: req.params.userId })
         .populate('author')
