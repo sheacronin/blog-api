@@ -140,7 +140,12 @@ exports.loginUser = (req, res) => {
             const token = jwt.sign(user.toJSON(), process.env.SECRET_KEY, {
                 expiresIn: '1h',
             });
-            res.cookie('token', token, { httpOnly: true, maxAge: 3600000 });
+            res.cookie('token', token, {
+                httpOnly: true,
+                maxAge: 3600000,
+                secure: true,
+                sameSite: 'none',
+            });
             return res.json({
                 user: {
                     username: user.username,
