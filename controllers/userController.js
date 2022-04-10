@@ -161,8 +161,11 @@ exports.logoutUser = (req, res, next) => {
 
 exports.getPostsByUser = (req, res, next) => {
     Post.find({ author: req.params.userId })
-        .populate('author')
-        .populate({ path: 'comments', populate: { path: 'author' } })
+        .populate('author', '-password')
+        .populate({
+            path: 'comments',
+            populate: { path: 'author', select: '-password' },
+        })
         .exec((err, posts) => {
             if (err) return next(err);
 

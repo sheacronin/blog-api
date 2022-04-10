@@ -6,8 +6,11 @@ const passport = require('passport');
 exports.getAllPosts = (req, res) => {
     Post.find()
         .sort([['timestamp', 'descending']])
-        .populate('author')
-        .populate({ path: 'comments', populate: { path: 'author' } })
+        .populate('author', '-password')
+        .populate({
+            path: 'comments',
+            populate: { path: 'author', select: '-password' },
+        })
         .exec((err, posts) => {
             if (err) return next(err);
 
@@ -19,8 +22,11 @@ exports.getPost = (req, res) => {
     const { postId } = req.params;
 
     Post.findById(postId)
-        .populate('author')
-        .populate({ path: 'comments', populate: { path: 'author' } })
+        .populate('author', '-password')
+        .populate({
+            path: 'comments',
+            populate: { path: 'author', select: '-password' },
+        })
         .exec((err, post) => {
             if (err) return next(err);
 
