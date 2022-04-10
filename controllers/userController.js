@@ -11,7 +11,15 @@ exports.getAllUsers = (req, res, next) => {
         .exec((err, users) => {
             if (err) return next(err);
 
-            res.json(users);
+            const usersWithoutPasswords = users.map((user) => {
+                return {
+                    username: user.username,
+                    displayName: user.displayName,
+                    id: user._id,
+                };
+            });
+
+            res.json({ users: usersWithoutPasswords });
         });
 };
 
@@ -21,7 +29,13 @@ exports.getUser = (req, res, next) => {
     User.findById(userId).exec((err, user) => {
         if (err) return next(err);
 
-        res.json(user);
+        res.json({
+            user: {
+                username: user.username,
+                displayName: user.displayName,
+                id: user._id,
+            },
+        });
     });
 };
 
@@ -34,14 +48,18 @@ exports.createUser = [
         .trim()
         .isLength({ min: 1, max: 30 })
         .escape(),
-    body('password', 'You must have a password'),
-    body('confirmPassword').custom((value, { req }) => {
-        if (value !== req.body.password) {
-            throw new Error('Password confirmation does not match password');
-        }
-        // Indicates success of this synchronous custom validator
-        return true;
-    }),
+    body('password', 'You must have a password').trim().isLength({ min: 1 }),
+    body('confirmPassword')
+        .trim()
+        .custom((value, { req }) => {
+            if (value !== req.body.password) {
+                throw new Error(
+                    'Password confirmation does not match password'
+                );
+            }
+            // Indicates success of this synchronous custom validator
+            return true;
+        }),
 
     (req, res, next) => {
         bcrypt.hash(req.body.password, 10, (err, hashedPassword) => {
@@ -72,8 +90,11 @@ exports.createUser = [
                                 if (err) return next(err);
 
                                 res.json({
-                                    username: user.username,
-                                    displayName: user.displayName,
+                                    user: {
+                                        username: user.username,
+                                        displayName: user.displayName,
+                                        id: user._id,
+                                    },
                                 });
                             });
                         }
@@ -106,7 +127,13 @@ exports.loginUser = (req, res) => {
                 expiresIn: '1h',
             });
             res.cookie('token', token, { httpOnly: true, maxAge: 3600000 });
-            return res.json({ user, token });
+            return res.json({
+                user: {
+                    username: user.username,
+                    displayName: user.displayName,
+                    id: user._id,
+                },
+            });
         });
     })(req, res);
 };
