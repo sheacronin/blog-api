@@ -39,6 +39,20 @@ exports.getUser = (req, res, next) => {
     });
 };
 
+exports.getCurrentUser = [
+    passport.authenticate('jwt', { session: false }),
+
+    (req, res, next) => {
+        res.json({
+            user: {
+                id: req.user._id,
+                username: req.user.username,
+                displayName: req.user.displayName,
+            },
+        });
+    },
+];
+
 exports.createUser = [
     body('username', 'Username must be specified')
         .trim()
