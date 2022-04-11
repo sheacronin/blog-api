@@ -10,6 +10,7 @@ exports.getAllPosts = (req, res) => {
         .populate({
             path: 'comments',
             populate: { path: 'author', select: '-password' },
+            options: { sort: { timestamp: -1 } },
         })
         .exec((err, posts) => {
             if (err) return next(err);
@@ -26,6 +27,7 @@ exports.getPost = (req, res) => {
         .populate({
             path: 'comments',
             populate: { path: 'author', select: '-password' },
+            options: { sort: { timestamp: -1 } },
         })
         .exec((err, post) => {
             if (err) return next(err);
