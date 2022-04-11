@@ -40,7 +40,14 @@ exports.createComment = [
                     (thePost) => console.log(thePost)
                 );
 
-                res.json({ comment });
+                Comment.populate(
+                    comment,
+                    { path: 'author', select: '-password' },
+                    (err, theComment) => {
+                        if (err) return next(err);
+                        res.json({ comment: theComment });
+                    }
+                );
             });
         }
     },
