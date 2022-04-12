@@ -161,6 +161,7 @@ exports.logoutUser = (req, res, next) => {
 
 exports.getPostsByUser = (req, res, next) => {
     Post.find({ author: req.params.userId })
+        .sort([['timestamp', 'descending']])
         .populate('author', '-password')
         .populate({
             path: 'comments',

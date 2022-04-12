@@ -11,6 +11,8 @@ router.get('/:postId', postController.getPost);
 router.put('/:postId', postController.editPost);
 router.delete('/:postId', postController.deletePost);
 
+router.put('/:postId/toggle-published', postController.togglePostPublished);
+
 router.post('/:postId/comments', commentController.createComment);
 router.put('/:postId/comments/:commentId', commentController.editComment);
 router.delete('/:postId/comments/:commentId', commentController.deleteComment);

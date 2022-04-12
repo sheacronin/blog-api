@@ -56,7 +56,7 @@ exports.createPost = [
             author: req.user.id,
             content: req.body.content,
             timestamp: new Date(),
-            isPublished: req.body.isPublished === 'true' ? true : false,
+            isPublished: req.body.isPublished,
             comments: [],
         });
 
@@ -130,5 +130,22 @@ exports.deletePost = [
                 message: `Post ${req.params.postId} has been successfully deleted`,
             });
         });
+    },
+];
+
+exports.togglePostPublished = [
+    passport.authenticate('jwt', { session: false }),
+
+    (req, res, next) => {
+        Post.findByIdAndUpdate(
+            req.params.postId,
+            [{ $set: { isPublished: { $eq: ['$isPublished', false] } } }],
+            { new: true },
+            (err, thePost) => {
+                if (err) return next(err);
+
+                res.json({ post: thePost });
+            }
+        );
     },
 ];
