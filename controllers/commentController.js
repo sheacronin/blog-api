@@ -4,10 +4,7 @@ const { body, validationResult } = require('express-validator');
 const passport = require('passport');
 
 exports.createComment = [
-    body('content', 'Comment must have content')
-        .trim()
-        .isLength({ min: 1 })
-        .escape(),
+    body('content', 'Comment must have content').trim().isLength({ min: 1 }),
 
     passport.authenticate('jwt', { session: false }),
 
@@ -54,10 +51,7 @@ exports.createComment = [
 ];
 
 exports.editComment = [
-    body('content', 'Comment must have content')
-        .trim()
-        .isLength({ min: 1 })
-        .escape(),
+    body('content', 'Comment must have content').trim().isLength({ min: 1 }),
 
     passport.authenticate('jwt', { session: false }),
 

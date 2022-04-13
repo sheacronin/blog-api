@@ -39,13 +39,8 @@ exports.getPost = (req, res) => {
 exports.createPost = [
     body('title', 'Title must be specified')
         .trim()
-        .isLength({ min: 1, max: 40 })
-        .escape(),
-    body('content', 'Post must have content')
-        .trim()
-        .isLength({ min: 1 })
-        .escape(),
-
+        .isLength({ min: 1, max: 40 }),
+    body('content', 'Post must have content').trim().isLength({ min: 1 }),
     passport.authenticate('jwt', { session: false }),
 
     (req, res, next) => {
@@ -77,8 +72,8 @@ exports.createPost = [
 ];
 
 exports.editPost = [
-    body('title', 'Title must be specified').trim().escape(),
-    body('content', 'Post must have content').trim().escape(),
+    body('title', 'Title must be specified').trim(),
+    body('content', 'Post must have content').trim(),
 
     passport.authenticate('jwt', { session: false }),
 
@@ -90,7 +85,7 @@ exports.editPost = [
             const newPost = {
                 title: req.body.title || originalPost.title,
                 content: req.body.content || originalPost.content,
-                isPublished: req.body.isPublished === 'true' ? true : false,
+                isPublished: req.body.isPublished,
             };
 
             if (!errors.isEmpty()) {

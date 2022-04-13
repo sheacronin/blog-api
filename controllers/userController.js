@@ -56,12 +56,10 @@ exports.getCurrentUser = [
 exports.createUser = [
     body('username', 'Username must be specified')
         .trim()
-        .isLength({ min: 3, max: 20 })
-        .escape(),
+        .isLength({ min: 3, max: 20 }),
     body('displayName', 'Display name must be specified')
         .trim()
-        .isLength({ min: 1, max: 30 })
-        .escape(),
+        .isLength({ min: 1, max: 30 }),
     body('password', 'You must have a password').trim().isLength({ min: 1 }),
     body('confirmPassword')
         .trim()
