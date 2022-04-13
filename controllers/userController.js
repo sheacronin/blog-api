@@ -8,35 +8,24 @@ const jwt = require('jsonwebtoken');
 exports.getAllUsers = (req, res, next) => {
     User.find()
         .sort([['username', 'descending']])
+        .select('-password')
         .exec((err, users) => {
             if (err) return next(err);
 
-            const usersWithoutPasswords = users.map((user) => {
-                return {
-                    username: user.username,
-                    displayName: user.displayName,
-                    id: user._id,
-                };
-            });
-
-            res.json({ users: usersWithoutPasswords });
+            res.json({ users });
         });
 };
 
 exports.getUser = (req, res, next) => {
     const { userId } = req.params;
 
-    User.findById(userId).exec((err, user) => {
-        if (err) return next(err);
+    User.findById(userId)
+        .select('-password')
+        .exec((err, user) => {
+            if (err) return next(err);
 
-        res.json({
-            user: {
-                username: user.username,
-                displayName: user.displayName,
-                id: user._id,
-            },
+            res.json({ user });
         });
-    });
 };
 
 exports.getCurrentUser = [
@@ -151,24 +140,26 @@ exports.loginUser = (req, res) => {
     })(req, res);
 };
 
-exports.logoutUser = (req, res, next) => {
-    // Remove the token cookie
-    res.cookie('token', '', { httpOnly: true, maxAge: 1 });
-    res.json({ message: 'Token cookie has been destroyed' });
-};
+exports.getPostsByUser = [
+    passport.authenticate('jwt', { session: false }),
 
-exports.getPostsByUser = (req, res, next) => {
-    Post.find({ author: req.params.userId })
-        .sort([['timestamp', 'descending']])
-        .populate('author', '-password')
-        .populate({
-            path: 'comments',
-            populate: { path: 'author', select: '-password' },
-            options: { sort: { timestamp: -1 } },
-        })
-        .exec((err, posts) => {
-            if (err) return next(err);
+    (req, res, next) => {
+        if (req.user._id.toString() !== req.params.userId) {
+            return res.sendStatus(403);
+        }
 
-            res.json(posts);
-        });
-};
+        Post.find({ author: req.params.userId })
+            .sort([['timestamp', 'descending']])
+            .populate('author', '-password')
+            .populate({
+                path: 'comments',
+                populate: { path: 'author', select: '-password' },
+                options: { sort: { timestamp: -1 } },
+            })
+            .exec((err, posts) => {
+                if (err) return next(err);
+
+                res.json(posts);
+            });
+    },
+];

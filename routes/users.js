@@ -8,7 +8,6 @@ router.post('/', userController.createUser);
 router.get('/current-user', userController.getCurrentUser);
 
 router.post('/login', userController.loginUser);
-router.post('/logout', userController.logoutUser);
 
 router.get('/:userId', userController.getUser);
 router.get('/:userId/posts', userController.getPostsByUser);

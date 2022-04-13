@@ -55,7 +55,7 @@ exports.editComment = [
 
     passport.authenticate('jwt', { session: false }),
 
-    (req, res, next) => {
+    async (req, res, next) => {
         const errors = validationResult(req);
 
         const newComment = {
@@ -69,14 +69,19 @@ exports.editComment = [
             });
             return;
         } else {
+            const comment = await Comment.findById(req.params.commentId);
+            if (req.user._id.toString() !== comment.author.toString()) {
+                return res.sendStatus(403);
+            }
+
             Comment.findByIdAndUpdate(
                 req.params.commentId,
                 newComment,
                 { new: true },
-                (err, thePost) => {
+                (err, theComment) => {
                     if (err) return next(err);
 
-                    res.json({ thePost });
+                    res.json({ comment: theComment });
                 }
             );
         }
@@ -86,7 +91,12 @@ exports.editComment = [
 exports.deleteComment = [
     passport.authenticate('jwt', { session: false }),
 
-    (req, res, next) => {
+    async (req, res, next) => {
+        const comment = await Comment.findById(req.params.commentId);
+        if (req.user._id.toString() !== comment.author.toString()) {
+            return res.sendStatus(403);
+        }
+
         // Remove comment id from post
         Post.findByIdAndUpdate(
             req.params.postId,

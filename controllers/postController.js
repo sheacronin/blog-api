@@ -4,7 +4,7 @@ const { body, validationResult } = require('express-validator');
 const passport = require('passport');
 
 exports.getAllPosts = (req, res) => {
-    Post.find()
+    Post.find({ isPublished: true })
         .sort([['timestamp', 'descending']])
         .populate('author', '-password')
         .populate({
@@ -81,12 +81,17 @@ exports.editPost = [
         const errors = validationResult(req);
 
         Post.findById(req.params.postId).then((originalPost) => {
-            console.log(originalPost);
             const newPost = {
                 title: req.body.title || originalPost.title,
                 content: req.body.content || originalPost.content,
                 isPublished: req.body.isPublished,
             };
+
+            if (
+                req.user._id.toString() !== originalPost.author._id.toString()
+            ) {
+                return res.sendStatus(403);
+            }
 
             if (!errors.isEmpty()) {
                 res.status(400).json({
@@ -102,7 +107,7 @@ exports.editPost = [
                     (err, thePost) => {
                         if (err) return next(err);
 
-                        res.json({ thePost });
+                        res.json({ post: thePost });
                     }
                 );
             }
@@ -113,7 +118,12 @@ exports.editPost = [
 exports.deletePost = [
     passport.authenticate('jwt', { session: false }),
 
-    (req, res, next) => {
+    async (req, res, next) => {
+        const post = await Post.findById(req.params.postId);
+        if (req.user._id.toString() !== post.author.toString()) {
+            return res.sendStatus(403);
+        }
+
         Post.findByIdAndRemove(req.params.postId, (err, thePost) => {
             if (err) return next(err);
 
@@ -131,7 +141,12 @@ exports.deletePost = [
 exports.togglePostPublished = [
     passport.authenticate('jwt', { session: false }),
 
-    (req, res, next) => {
+    async (req, res, next) => {
+        const post = await Post.findById(req.params.postId);
+        if (req.user._id.toString() !== post.author.toString()) {
+            return res.sendStatus(403);
+        }
+
         Post.findByIdAndUpdate(
             req.params.postId,
             [{ $set: { isPublished: { $eq: ['$isPublished', false] } } }],
