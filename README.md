@@ -24,4 +24,4 @@ The index page will load all posts by the signed in user, with buttons to edit, 
 
 ## Bloggit API
 
-The API hosted at [blog-api-sc.herokuapp.com](https://blog-api-sc.herokuapp.com/) has routes to create, read, update, and delete posts, comments, and users.
+The API hosted at [blog-api-mfrt.onrender.com](https://blog-api-mfrt.onrender.com/) has routes to create, read, update, and delete posts, comments, and users.
